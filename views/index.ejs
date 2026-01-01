@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog - ALStream</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div style="display:flex; align-items:center; gap:30px;">
+            <div class="logo"><a href="/">Al<span class="highlight">Stream</span></a></div>
+            <!-- Bouton Home stylisé -->
+            <a href="/catalog" class="home-button">Home</a>
+        </div>
+    </nav>
+
+    <div class="layout-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-filter"></i> Filters</h3>
+                <input type="text" id="tagSearchInput" placeholder="Filter tags..." onkeyup="filterTags()">
+            </div>
+            <div class="category-menu">
+                <a href="/catalog" style="color: #888; display:block; margin-bottom:15px; font-weight:bold;">View
+                    All</a>
+                <!-- Categories Loop -->
+                <% if (typeof categories !=='undefined' ) { %>
+                    <% let allTagsSet=new Set(); %>
+                        <% Object.values(categories).forEach(tagList=> { tagList.forEach(t => allTagsSet.add(t)); }); %>
+                            <% const allTags=Array.from(allTagsSet).sort(); %>
+
+                                <% for (const [mainCat, tags] of Object.entries(categories)) { %>
+                                    <% if (String(mainCat).toLowerCase()==='anime' ) { %>
+                                        <div class="cat-group">
+                                            <span class="cat-title">
+                                                <%= mainCat %>
+                                            </span>
+                                            <div class="tag-list">
+                                                <% tags.forEach(tag=> { %>
+                                                    <a href="#" class="tag-link">
+                                                        <%= tag %>
+                                                    </a>
+                                                    <% }); %>
+                                            </div>
+                                        </div>
+                                        <% } %>
+                                            <% } %>
+                                                <% } %>
+            </div>
+        </aside>
+
+        <main class="content">
+            <!-- HEADER MODIFIÉ -->
+            <div class="catalog-header">
+                <!-- Élément vide invisible pour équilibrer le layout et centrer le H2 -->
+                <div class="header-spacer"></div>
+
+                <h2 style="margin: 0; text-align: center;">
+                    Full Catalog
+                    <span style="font-size:0.8rem; color:#666; font-weight:normal; margin-left:10px;">
+                        (<%= typeof animes !=='undefined' ? animes.length : 0 %>)
+                    </span>
+                </h2>
+
+                <!-- Bouton Loupe à droite -->
+                <button id="toggleSearchBtn" class="search-toggle-btn" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <!-- BARRE DE RECHERCHE DÉPLIANTE (Juste en dessous) -->
+            <div id="searchContainer" class="expandable-search-container">
+                <form action="/catalog" method="GET" style="margin: 0;">
+                    <input type="text" name="search" id="mainSearchInput" class="full-width-search"
+                        placeholder="Search title (Naruto, One Piece...)" autocomplete="off">
+                </form>
+            </div>
+
+            <div class="video-grid">
+                <% if(typeof animes==='undefined' || animes.length===0) { %>
+                    <p style="color: #888;">No content found in database.</p>
+                    <% } else { %>
+                        <% animes.forEach(function(anime) { %>
+                            <a href="/watch/<%= anime.id %>" class="card">
+                                <img src="<%= anime.affiche ? anime.affiche : 'https://via.placeholder.com/200x300?text=No+Cover' %>"
+                                    alt="<%= anime.titre %>">
+                                <div class="card-info">
+                                    <h3>
+                                        <%= anime.titre %>
+                                    </h3>
+                                    <div class="tags-display">
+                                        <% if(anime.note) { %>
+                                            <span class="tag-badge" style="background-color: #ffd700; color: black;">★
+                                                <%= anime.note %>
+                                            </span>
+                                            <% } %>
+                                                <span class="tag-badge">VOSTFR</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <% }); %>
+                                <% } %>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPT JAVASCRIPT POUR LES FONCTIONNALITÉS -->
+    <script>
+        // Fonction filtre existante
+        function filterTags() {
+            let input = document.getElementById('tagSearchInput').value.toLowerCase();
+            let tags = document.getElementsByClassName('tag-link');
+            for (let i = 0; i < tags.length; i++) {
+                let txt = tags[i].innerText.toLowerCase();
+                tags[i].style.display = txt.includes(input) ? "block" : "none";
+            }
+        }
+
+        // NOUVEAU : Fonction pour ouvrir/fermer la barre de recherche
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('toggleSearchBtn');
+            const searchContainer = document.getElementById('searchContainer');
+            const searchInput = document.getElementById('mainSearchInput');
+
+            toggleBtn.addEventListener('click', function () {
+                // Basculer la classe 'active'
+                searchContainer.classList.toggle('active');
+
+                // Si la barre s'ouvre, on met le focus dans l'input
+                if (searchContainer.classList.contains('active')) {
+                    setTimeout(() => {
+                        searchInput.focus();
+                    }, 100); // Petit délai pour laisser l'animation commencer
+                }
+            });
+        });
+    </script>
+
+    <footer style="background-color: #000; color: #ccc; padding: 50px 30px 30px; margin-top: 50px;">
+        <div
+            style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 50px; margin-bottom: 50px;">
+            <!-- Colonne 1 -->
+            <div>
+                <h3 style="color: #fff; font-weight: bold; margin-bottom: 20px;">QUI SOMMES-NOUS</h3>
+                <p style="font-size: 14px; line-height: 1.6;">
+                    ALStream n'héberge pas les vidéos. Pour toute réclamation liée au droit d'auteur, contactez la
+                    plateforme d'hébergement concernée.
+                </p>
+            </div>
+            <!-- Colonne 2 -->
+            <div>
+                <h3 style="color: #fff; font-weight: bold; margin-bottom: 20px;">LIENS UTILES</h3>
+                <ul style="list-style: none; padding: 0; font-size: 14px; line-height: 1.8;">
+                    <li><a href="/catalog" style="color: #ccc; text-decoration: none;">Catalogue</a></li>
+                </ul>
+            </div>
+            <!-- Colonne 3 -->
+            <div>
+                <h3 style="color: #fff; font-weight: bold; margin-bottom: 20px;">SOUTENIR NOTRES PROJET</h3>
+                <ul style="list-style: none; padding: 0; font-size: 14px; line-height: 1.8;">
+                    <li style="margin-bottom: 10px;"><a href="#" style="color: #ccc; text-decoration: none;">Soutener
+                            Nous</a></li>
+                </ul>
+            </div>
+            <!-- Colonne 4 -->
+            <div>
+                <h3 style="color: #fff; font-weight: bold; margin-bottom: 20px;">NOUS SUIVRE</h3>
+                <ul style="list-style: none; padding: 0; font-size: 14px; line-height: 1.8;">
+                    <li style="margin-bottom: 10px;"><a href="https://x.com/Anime_samaFR"
+                            style="color: #ccc; text-decoration: none;"><i class="fab fa-twitter"></i> X / Twitter</a>
+                    </li>
+                    <li style="margin-bottom: 10px;"><a href="https://discord.gg/TKXP3fFJdc"
+                            style="color: #ccc; text-decoration: none;"><i class="fab fa-discord"></i> Discord</a></li>
+                    <li style="margin-bottom: 10px;"><a href="#" style="color: #ccc; text-decoration: none;"><i
+                                class="fab fa-instagram"></i> Instagram</a></li>
+                    <li><a href="#" style="color: #ccc; text-decoration: none;"><i class="fab fa-tiktok"></i> TikTok</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div
+            style="border-top: 1px solid #333; padding-top: 30px; display: flex; justify-content: space-between; align-items: center; font-size: 14px;">
+            <div>
+                <div style="margin-bottom: 5px;">© 2026 ALStream</div>
+                <div style="color: #888;">Tous droits réservés</div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

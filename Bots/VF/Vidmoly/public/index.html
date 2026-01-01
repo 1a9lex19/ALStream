@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime-Sama Bot V4</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --primary: #8a2be2;
+            --bg: #0f0f13;
+            --panel: #1a1a20;
+            --text: #e0e0e0;
+            --green: #00ff9d;
+            --red: #ff4757;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* C'est ce bloc qui affiche la case */
+        .config-area {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border-left: 5px solid var(--primary);
+        }
+
+        .config-area label {
+            font-weight: bold;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .config-area input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #000;
+            color: var(--green);
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        #btn-start {
+            background: var(--primary);
+            color: white;
+        }
+
+        #btn-start:hover {
+            background: #6a1bb3;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        #btn-stop {
+            background: var(--panel);
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        #btn-stop.active {
+            background: var(--red);
+            color: white;
+            cursor: pointer;
+        }
+
+        .terminal-window {
+            flex: 1;
+            background: #000;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            border: 1px solid #333;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .log-line {
+            margin: 2px 0;
+            border-bottom: 1px solid #111;
+            padding: 2px 0;
+        }
+
+        .log-info {
+            color: #aaa;
+        }
+
+        .log-success {
+            color: var(--green);
+        }
+
+        .log-error {
+            color: var(--red);
+        }
+
+        .log-link {
+            color: #5dade2;
+        }
+
+        .log-anime {
+            color: var(--primary);
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            border-top: 1px dashed #333;
+            padding-top: 5px;
+        }
+
+        .log-skip {
+            color: #555;
+            font-style: italic;
+            font-size: 0.8em;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🤖 Anime-Sama Bot v4.0</h1>
+        <div id="status-indicator" style="color: #666;">● En attente</div>
+    </header>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>Animes Scannés</h3>
+            <div class="value" id="count-anime">0</div>
+        </div>
+        <div class="card">
+            <h3>Épisodes Trouvés</h3>
+            <div class="value" id="count-episodes">0</div>
+        </div>
+        <div class="card">
+            <h3>Erreurs / Skips</h3>
+            <div class="value" id="count-errors" style="color: var(--red);">0</div>
+        </div>
+    </div>
+
+    <!-- ZONE DE CONFIGURATION -->
+    <div class="config-area">
+        <label for="start-input">📍 Commencer à partir de l'anime (Optionnel) :</label>
+        <input type="text" id="start-input" placeholder="ex: one-piece (laisser vide pour tout faire)">
+    </div>
+
+    <div class="controls">
+        <button id="btn-start" onclick="startBot()">Lancer le Bot</button>
+        <button id="btn-stop" onclick="stopBot()">Arrêter d'Urgence</button>
+    </div>
+
+    <div class="terminal-window" id="logs">
+        <div class="log-line log-info">> Prêt à démarrer...</div>
+    </div>
+
+    <script>
+        const socket = io();
+        const logsDiv = document.getElementById('logs');
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+        const statusInd = document.getElementById('status-indicator');
+
+        socket.on('log', (data) => {
+            const div = document.createElement('div');
+            div.className = `log-line log-${data.type}`;
+            div.textContent = `> ${data.msg}`;
+            if (data.msg.includes('📺 ANIME :')) div.className = 'log-anime';
+            logsDiv.appendChild(div);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        });
+
+        socket.on('stats', (data) => {
+            if (data.anime) document.getElementById('count-anime').innerText = data.anime;
+            if (data.episode) document.getElementById('count-episodes').innerText = data.episode;
+            if (data.error) document.getElementById('count-errors').innerText = data.error;
+        });
+
+        socket.on('bot-status', (status) => {
+            if (status === 'running') {
+                statusInd.innerText = "● En cours d'exécution...";
+                statusInd.style.color = "var(--green)";
+                btnStart.disabled = true;
+                btnStart.style.opacity = "0.5";
+                btnStop.classList.add('active');
+            } else {
+                statusInd.innerText = "● Arrêté / Terminé";
+                statusInd.style.color = "var(--red)";
+                btnStart.disabled = false;
+                btnStart.style.opacity = "1";
+                btnStop.classList.remove('active');
+            }
+        });
+
+        function startBot() {
+            const startFrom = document.getElementById('start-input').value.trim();
+            logsDiv.innerHTML = '';
+            socket.emit('start', { startFrom: startFrom });
+        }
+
+        function stopBot() {
+            socket.emit('stop');
+        }
+    </script>
+</body>
+
+</html>
