@@ -1,11 +1,11 @@
 {
-  "name": "streambase",
+  "name": "alstream",
   "version": "1.0.0",
   "description": "",
   "main": "init_db.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
+    "start": "node index.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

@@ -1422,18 +1422,141 @@ a {
     font-size: 0.85rem;
 }
 
-.logo {
+.logo_login {
     text-align: center;
     margin-bottom: 30px;
     font-size: 1.5rem;
     font-weight: 800;
 }
 
-.logo a {
+.logo_login a {
     color: #fff;
     text-decoration: none;
 }
 
-.logo .highlight {
+.logo_login .highlight {
     color: #8a2be2;
+}
+
+/* Icon */
+
+.logo-icon {
+    background: var(--accent);
+    /* Ton violet #8a2be2 */
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    /* Carré arrondi */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+    transform: rotate(-5deg);
+    /* Petit effet de style incliné */
+}
+
+.logo a:hover .logo-icon {
+    transform: rotate(0deg) scale(1.1);
+    transition: 0.3s;
+}
+
+/* Player Selector */
+/* --- CUSTOM DROPDOWN (Menu Personnalisé) --- */
+.custom-select-wrapper {
+    position: relative;
+    width: 220px;
+    margin: 10px auto 25px auto;
+    /* Centré */
+    user-select: none;
+    font-size: 1rem;
+    z-index: 5;
+}
+
+/* Le bouton principal (fermé) */
+.custom-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: transparent;
+    border: 2px solid #333;
+    border-radius: 12px;
+    /* Arrondi du bouton principal */
+    padding: 10px 15px;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.custom-select-trigger:hover {
+    border-color: #555;
+}
+
+/* La flèche */
+.custom-select-trigger i {
+    color: #8a2be2;
+    /* Violet */
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+
+/* Liste des options (Le menu déroulant) */
+.custom-options {
+    position: absolute;
+    top: 110%;
+    /* Juste en dessous du bouton */
+    left: 0;
+    right: 0;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    /* ARRONDIS DU MENU DÉROULANT */
+    overflow: hidden;
+    /* Important pour que les options ne dépassent pas */
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* État ouvert */
+.custom-select-wrapper.open .custom-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-select-wrapper.open .custom-select-trigger {
+    border-color: #8a2be2;
+    /* Bordure violette quand ouvert */
+}
+
+.custom-select-wrapper.open .custom-select-trigger i {
+    transform: rotate(180deg);
+    /* La flèche tourne */
+}
+
+/* Les options individuelles */
+.custom-option {
+    padding: 12px 15px;
+    cursor: pointer;
+    color: #ccc;
+    transition: all 0.2s;
+}
+
+/* Survol des options */
+.custom-option:hover {
+    background-color: #8a2be2;
+    /* Fond Violet */
+    color: white;
+}
+
+/* Option sélectionnée */
+.custom-option.selected {
+    background-color: #2a2a2a;
+    color: #8a2be2;
+    font-weight: bold;
 }

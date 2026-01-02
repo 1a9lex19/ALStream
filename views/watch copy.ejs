@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        <%= anime.titre %> - ALStream
+    </title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="/">AL<span class="highlight">Stream</span></a></div>
+        <a href="/catalog" class="btn-back">Back to Catalog</a>
+    </nav>
+
+    <div class="details-container">
+        <!-- LEFT: Poster -->
+        <div class="details-left">
+            <div class="poster-wrapper">
+                <img src="<%= anime.affiche %>" alt="<%= anime.titre %>">
+            </div>
+        </div>
+
+        <!-- RIGHT: Content -->
+        <div class="details-right">
+            <h1 class="media-title">
+                <%= anime.titre %>
+            </h1>
+            <div class="media-meta">
+                <!-- Adaptation : On affiche la date et la note car 'type' et 'tags' n'existent plus dans la nouvelle BDD -->
+                <span>
+                    <i class="fas fa-calendar-alt"></i>
+                    <%= anime.date_sortie %>
+                </span> • <span>
+                    <i class="fas fa-star" style="color: gold;"></i>
+                    <%= anime.note %>
+                </span>
+            </div>
+
+            <!-- Petit ajout invisible pour garder l'espacement si besoin, ou description courte -->
+            <p
+                style="color: #ccc; margin-top: 10px; font-size: 0.9rem; line-height: 1.4; max-height: 80px; overflow: hidden;">
+                <%= anime.synopsis %>
+            </p>
+
+            <!-- CONTROLS CONTAINER -->
+            <div class="controls-area">
+
+                <!-- 1. SEASON SELECTOR -->
+                <div class="season-selector" id="seasonTabs"></div>
+
+                <!-- 2. LANGUAGE SELECTOR -->
+                <div class="lang-buttons">
+                    <button class="flag-btn vo-flag active" onclick="setLanguage('VOSTFR', this)">
+                        <span class="flag-text">VO</span>
+                    </button>
+                    <button class="flag-btn vf-flag" onclick="setLanguage('VF', this)">
+                        <span class="flag-text">VF</span>
+                    </button>
+                    <button class="flag-btn all-flag" onclick="setLanguage('ALL', this)" title="Show All">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #333; margin-bottom: 20px;">
+
+            <!-- EPISODE GRID -->
+            <div class="episodes-grid" id="gridContainer">
+                <% if(episodes.length===0) { %>
+                    <p style="color:#666;">No episodes available.</p>
+                    <% } %>
+
+                        <!-- REMPLACER LA BOUCLE ACTUELLE PAR CECI -->
+                        <% episodes.forEach((ep, index)=> {
+                            let playersData = JSON.stringify([
+                            { nom: "Lecteur Principal", url: ep.lien }
+                            ]);
+                            %>
+                            <div class="episode-card" id="ep-card-<%= index %>" data-players='<%= playersData %>'
+                                data-title="S<%= ep.saison %> - Ep <%= ep.episode %>" data-lang="<%= ep.langue %>"
+                                data-season="<%= ep.saison %>" onclick="openVideo(this)">
+
+                                <img src="<%= ep.image ? ep.image : anime.affiche %>" alt="Ep <%= ep.episode %>">
+
+                                <span class="lang-badge <%= ep.langue %>">
+                                    <%= ep.langue %>
+                                </span>
+
+                                <div class="ep-info">
+                                    <span class="ep-number">Episode <%= ep.episode %></span>
+                                    <i class="fas fa-play-circle"></i>
+                                </div>
+                            </div>
+                            <% }); %>
+                                <!-- ADAPTATION VARIABLES BDD : ep.lien, ep.saison, ep.langue, ep.image 
+                                <% episodes.forEach((ep, index)=> { %>
+                                    <div class="episode-card" id="ep-card-<%= index %>"
+                                        onclick="openVideo(this, '<%= ep.lien %>', 'S<%= ep.saison %> - Ep <%= ep.episode %>')"
+                                        data-lang="<%= ep.langue %>" data-season="<%= ep.saison %>">-->
+
+                                <!-- Fallback image : si pas d'image épisode, on met l'affiche de l'anime -->
+                                <img src="<%= ep.image ? ep.image : anime.affiche %>" alt="Ep <%= ep.episode %>">
+
+                                <span class="lang-badge <%= ep.langue %>">
+                                    <%= ep.langue %>
+                                </span>
+
+                                <div class="ep-info">
+                                    <span class="ep-number">Episode <%= ep.episode %></span>
+                                    <i class="fas fa-play-circle"></i>
+                                </div>
+            </div>
+            <% }); %>
+        </div>
+    </div>
+    </div>
+
+    <div class="video-overlay" id="videoModal">
+        <div class="video-container-modal">
+
+            <!-- Header avec titre et fermeture -->
+            <div class="modal-header">
+                <h3 class="modal-title-text" id="modalTitle">Playing...</h3>
+                <button class="btn-close-modern" onclick="closeVideo()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- NOUVEAU : Zone des boutons de lecteurs (Style Anime-Sama) -->
+            <div class="player-selector" id="playerTabs">
+                <!-- Les boutons seront injectés ici par le JS -->
+            </div>
+
+            <!-- Lecteur Iframe -->
+            <div class="video-wrapper">
+                <iframe id="mainPlayer" src="" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            <!-- Contrôles Suivant / Précédent -->
+            <div class="modal-controls">
+                <button class="nav-btn" id="btnPrev" onclick="playPrev()">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <button class="nav-btn" id="btnNext" onclick="playNext()">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- NOUVEAU PLAYER OVERLAY 
+    <div class="video-overlay" id="videoModal">
+        <div class="video-container-modal">
+
+            //Header avec bouton Fermer//
+            <div class="modal-header">
+                <h3 class="modal-title-text" id="modalTitle">Playing...</h3>
+                <button class="btn-close-modern" onclick="closeVideo()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            // Lecteur //
+            <div class="video-wrapper">
+                <iframe id="mainPlayer" src="" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            // Contrôles Suivant / Précédent //
+            <div class="modal-controls">
+                <button class="nav-btn" id="btnPrev" onclick="playPrev()">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <button class="nav-btn" id="btnNext" onclick="playNext()">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>-->
+
+    <script>
+        // --- GLOBAL STATE ---
+        let currentLang = 'VOSTFR';
+        let currentSeason = 1;
+
+        // Stocke la carte de l'épisode en cours de lecture
+        let currentPlayingCard = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSeasons();
+            applyFilters();
+        });
+
+        // 1. Initialize Season Buttons
+        function initSeasons() {
+            const cards = document.querySelectorAll('.episode-card');
+            const seasons = new Set();
+            cards.forEach(card => seasons.add(parseInt(card.getAttribute('data-season'))));
+            if (seasons.size === 0) return;
+
+            const sortedSeasons = Array.from(seasons).sort((a, b) => a - b);
+            currentSeason = sortedSeasons[0];
+
+            const container = document.getElementById('seasonTabs');
+            container.innerHTML = '';
+
+            sortedSeasons.forEach(s => {
+                const btn = document.createElement('button');
+                btn.className = 'season-tab-btn';
+                btn.innerText = `Season ${s}`;
+                if (s === currentSeason) btn.classList.add('active');
+
+                btn.onclick = () => {
+                    document.querySelectorAll('.season-tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSeason = s;
+                    applyFilters();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // 2. Handle Language
+        function setLanguage(lang, btn) {
+            currentLang = lang;
+            document.querySelectorAll('.flag-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            applyFilters();
+        }
+
+        // 3. Filters
+        function applyFilters() {
+            const cards = document.querySelectorAll('.episode-card');
+            cards.forEach(card => {
+                const cardLang = card.getAttribute('data-lang').toUpperCase();
+                const cardSeason = parseInt(card.getAttribute('data-season'));
+                const langMatch = (currentLang === 'ALL' || cardLang === currentLang);
+                const seasonMatch = (cardSeason === currentSeason);
+
+                if (langMatch && seasonMatch) {
+                    card.style.display = 'block';
+                    card.classList.add('visible-ep'); // Marqueur pour navigation
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('visible-ep');
+                }
+            });
+        }
+
+        // --- PLAYER LOGIC ---
+        // REMPLACER LES FONCTIONS openVideo ET closeVideo PAR CECI
+
+        function openVideo(cardElement) {
+            currentPlayingCard = cardElement;
+
+            const title = cardElement.getAttribute('data-title');
+            const playersAttr = cardElement.getAttribute('data-players');
+
+            let players = [];
+            try {
+                if (playersAttr) {
+                    players = JSON.parse(playersAttr);
+                }
+            } catch (e) {
+                console.error("Erreur JSON:", e);
+            }
+
+            // Affichage modale
+            document.getElementById('videoModal').style.display = 'flex';
+            document.getElementById('modalTitle').innerText = title || "Episode";
+
+            // Boutons lecteurs
+            const playerContainer = document.getElementById('playerTabs');
+            playerContainer.innerHTML = '';
+
+            if (players && players.length > 0) {
+                players.forEach((player, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'player-btn';
+                    btn.innerHTML = `<i class="fas fa-play"></i> ${player.nom}`;
+
+                    btn.onclick = () => {
+                        document.getElementById('mainPlayer').src = player.url;
+                        document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    };
+
+                    playerContainer.appendChild(btn);
+
+                    if (index === 0) btn.click();
+                });
+            } else {
+                document.getElementById('mainPlayer').src = "";
+                playerContainer.innerHTML = '<p style="color:#ccc;">Aucun lecteur disponible</p>';
+            }
+
+            updateNavButtons();
+        }
+
+        /*.function openVideo(cardElement, url, title) {
+            currentPlayingCard = cardElement;
+
+            //Mise à jour de l'UI
+            document.getElementById('videoModal').style.display = 'flex';
+
+            // Note: Ajout d'une vérif pour éviter erreur si url vide
+            if (url && url !== 'REPLACE_ME') {
+                document.getElementById('mainPlayer').src = url; // + "?autoplay=1" supprimé car vidmoly gère parfois mal l'autoplay
+            } else {
+                document.getElementById('mainPlayer').src = "";
+                alert("Video link not available yet.");
+            }
+
+            document.getElementById('modalTitle').innerText = title;
+
+            updateNavButtons();
+        }*/
+
+        function closeVideo() {
+            document.getElementById('videoModal').style.display = 'none';
+            document.getElementById('mainPlayer').src = ""; // Arrêter la vidéo
+            document.getElementById('playerTabs').innerHTML = ""; // Vider les boutons
+            currentPlayingCard = null;
+        }
+
+        /*function closeVideo() {
+            document.getElementById('videoModal').style.display = 'none';
+            document.getElementById('mainPlayer').src = "";
+            currentPlayingCard = null;
+        }*/
+
+        // Met à jour l'état (gris/actif) des boutons Précédent/Suivant
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('btnPrev');
+            const nextBtn = document.getElementById('btnNext');
+
+            // Trouver les épisodes visibles
+            const visibleCards = Array.from(document.querySelectorAll('.episode-card.visible-ep'));
+            const currentIndex = visibleCards.indexOf(currentPlayingCard);
+
+            // Gérer le bouton Précédent
+            if (currentIndex > 0) {
+                prevBtn.disabled = false;
+            } else {
+                prevBtn.disabled = true;
+            }
+
+            // Gérer le bouton Suivant
+            if (currentIndex !== -1 && currentIndex < visibleCards.length - 1) {
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.disabled = true;
+            }
+        }
+
+        function playNext() {
+            const visibleCards = Array.from(document.querySelectorAll('.episode-card.visible-ep'));
+            const currentIndex = visibleCards.indexOf(currentPlayingCard);
+
+            if (currentIndex !== -1 && currentIndex < visibleCards.length - 1) {
+                // Simule le clic sur la carte suivante
+                visibleCards[currentIndex + 1].click();
+            }
+        }
+
+        function playPrev() {
+            const visibleCards = Array.from(document.querySelectorAll('.episode-card.visible-ep'));
+            const currentIndex = visibleCards.indexOf(currentPlayingCard);
+
+            if (currentIndex > 0) {
+                // Simule le clic sur la carte précédente
+                visibleCards[currentIndex - 1].click();
+            }
+        }
+    </script>
+</body>
+
+</html>
