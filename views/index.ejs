@@ -22,28 +22,6 @@
     </nav>
 
     <div class="layout-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3><i class="fas fa-filter"></i> Filters</h3>
-                <input type="text" id="tagSearchInput" placeholder="Filter tags..." onkeyup="filterTags()">
-            </div>
-            <div class="category-menu">
-                <a href="/catalog" style="color: #888; display:block; margin-bottom:15px; font-weight:bold;">View
-                    All</a>
-                <% if (typeof categories !=='undefined' ) { %>
-                    <% for (const [mainCat, tags] of Object.entries(categories)) { %>
-                        <div class="cat-group">
-                            <a href="/catalog?type=<%= mainCat %>" class="cat-title"
-                                style="text-decoration: none; color: inherit; display: block; cursor: pointer;">
-                                <%= mainCat %>
-                                    </span>
-                            </a>
-                        </div>
-                        <% } %>
-                            <% } %>
-            </div>
-        </aside>
-
         <main class="content">
             <div class="catalog-header">
                 <div class="header-spacer"></div>
