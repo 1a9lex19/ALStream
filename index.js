@@ -27,7 +27,7 @@ app.use(session({
 }));
 
 // --- DATABASE & HELPERS ---
-const dbPath = path.join(__dirname, 'Data', 'database.db');
+const dbPath = path.join(__dirname, 'data', 'database.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) return console.error("❌ Erreur DB:", err.message);
     console.log("✅ Connecté à database.db");
