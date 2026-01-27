@@ -236,7 +236,7 @@ function isAnimePresent(aniListTitle, asList) {
 // ROUTE PLANNING MODIFIÉE
 // Route Planning (Version Fichier Cache)
 app.get('/planning', (req, res) => {
-    const jsonPath = 'C:\\Users\\Alex19\\Desktop\\Program\\Release\\ALStream\\Data\\planning_cache.json';
+    const jsonPath = 'data/planning_cache.json';
 
     // 1. Structure de base vide et ordonnée
     const daysOrder = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
