@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <%- include('partials/head', { title: 'Mon Profil' }) %>
+        <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="avatar">
+                    <%= user.username.charAt(0).toUpperCase() %>
+                </div>
+                <div class="info">
+                    <h1>
+                        <%= user.username %>
+                    </h1>
+                    <p><i class="fas fa-envelope"></i>
+                        <%= user.email %>
+                    </p>
+                    <p style="font-size: 0.8rem; color: #666;">Membre ALStream</p>
+                </div>
+                <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+            </div>
+
+            <h2 class="section-title"><i class="fas fa-heart" style="color: #ff4757;"></i> Mes Favoris</h2>
+            <div class="placeholder-box">
+                <i class="fas fa-tv" style="font-size: 2rem; margin-bottom: 10px; display:block;"></i>
+                Vous n'avez pas encore ajouté de favoris. <br> (Fonctionnalité à venir)
+            </div>
+
+            <h2 class="section-title"><i class="fas fa-history" style="color: #2ed573;"></i> Historique</h2>
+            <div class="placeholder-box">
+                <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 10px; display:block;"></i>
+                Votre historique de visionnage apparaîtra ici.
+            </div>
+        </div>
+
+</body>
+
+</html>

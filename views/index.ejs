@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <%- include('partials/head', { title: 'Catalogue - ALStream' }) %>
+        <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+        <div class="layout-container">
+            <!-- SIDEBAR -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-filter"></i> Filtres</h3>
+                    <input type="text" id="tagSearchInput" placeholder="Filtrer tags..." onkeyup="filterTags()">
+                </div>
+                <div class="category-menu">
+                    <a href="/catalog" style="color: #888; display:block; margin-bottom:15px; font-weight:bold;">Tout
+                        voir</a>
+                    <% if (typeof categories !=='undefined' ) { %>
+                        <% for (const [mainCat, tags] of Object.entries(categories)) { %>
+                            <div class="cat-group">
+                                <a href="/catalog?type=<%= mainCat %>" class="cat-title">
+                                    <%= mainCat %>
+                                </a>
+                            </div>
+                            <% } %>
+                                <% } %>
+                </div>
+            </aside>
+
+            <main class="content">
+                <div class="catalog-header">
+                    <div class="header-spacer"></div>
+                    <h2>Catalogue Complet</h2>
+                    <button id="toggleSearchBtn" class="search-toggle-btn" title="Rechercher">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <!-- BARRE DE RECHERCHE EXTENSIBLE -->
+                <div id="searchContainer" class="expandable-search-container">
+                    <div class="search-wrapper">
+                        <form action="/catalog" method="GET">
+                            <input type="text" name="search" id="mainSearchInput" class="full-width-search"
+                                placeholder="Rechercher un anime..." autocomplete="off">
+                        </form>
+                        <!-- Conteneur des résultats instantanés (Dropdown) -->
+                        <div id="liveSearchResults"></div>
+                    </div>
+                </div>
+
+                <!-- GRILLE VIDEOS -->
+                <div class="video-grid">
+                    <% if(typeof animes==='undefined' || animes.length===0) { %>
+                        <p style="color: #888;">Aucun contenu trouvé.</p>
+                        <% } else { %>
+                            <% animes.forEach(function(anime) { %>
+                                <a href="/watch/<%= anime.slug %>" class="card">
+                                    <img src="<%= anime.affiche || 'https://via.placeholder.com/200x300' %>"
+                                        alt="<%= anime.titre %>">
+                                    <div class="card-info">
+                                        <h3>
+                                            <%= anime.titre %>
+                                        </h3>
+                                        <div class="tags-display">
+                                            <% if(anime.note) { %>
+                                                <span class="tag-badge"
+                                                    style="background-color: #ffd700; color: black;">★ <%= anime.note %>
+                                                </span>
+                                                <% } %>
+                                                    <span class="tag-badge">VOSTFR</span>
+                                        </div>
+                                    </div>
+                                </a>
+                                <% }); %>
+                                    <% } %>
+                </div>
+            </main>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const toggleBtn = document.getElementById('toggleSearchBtn');
+                const searchContainer = document.getElementById('searchContainer');
+                const searchInput = document.getElementById('mainSearchInput');
+                const resultsDiv = document.getElementById('liveSearchResults');
+
+                // Toggle de la barre
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', () => {
+                        searchContainer.classList.toggle('active');
+                        if (searchContainer.classList.contains('active')) {
+                            setTimeout(() => searchInput.focus(), 300);
+                        }
+                    });
+                }
+
+                // RECHERCHE LIVE
+                if (searchInput) {
+                    searchInput.addEventListener('input', async (e) => {
+                        const query = e.target.value;
+
+                        // Si moins de 2 lettres, on cache
+                        if (query.length < 2) {
+                            resultsDiv.style.display = 'none';
+                            return;
+                        }
+
+                        try {
+                            // On appelle l'API de ton serveur
+                            const response = await fetch(`/api/search-live?q=${encodeURIComponent(query)}`);
+                            const animes = await response.json();
+
+                            if (animes.length > 0) {
+                                resultsDiv.innerHTML = animes.map(a => `
+                        <a href="/watch/${a.slug}" class="search-result-item">
+                            <img src="${a.affiche || 'https://via.placeholder.com/55x75'}" alt="">
+                            <div class="search-result-info">
+                                <h4>${a.titre}</h4>
+                                <p>${a.synopsis ? a.synopsis.substring(0, 45) + '...' : 'Anime'}</p>
+                            </div>
+                        </a>
+                    `).join('');
+                                resultsDiv.style.display = 'block';
+                            } else {
+                                resultsDiv.innerHTML = '<div class="no-result" style="padding:15px; color:#666;">Aucun résultat</div>';
+                                resultsDiv.style.display = 'block';
+                            }
+                        } catch (err) {
+                            console.error("Erreur recherche live:", err);
+                        }
+                    });
+                }
+
+                // Fermer si on clique ailleurs
+                document.addEventListener('click', (e) => {
+                    if (!document.querySelector('.search-wrapper').contains(e.target)) {
+                        resultsDiv.style.display = 'none';
+                    }
+                });
+            });
+        </script>
+
+        <footer
+            style="background-color: #000; color: #ccc; padding: 50px 30px 30px; margin-top: 50px; text-align: center;">
+            <p>© 2026 ALStream - Tous droits réservés</p>
+        </footer>
+</body>
+
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('partials/head', { title: 'ALStream' }) %>
+        <link rel="stylesheet" href="/public/style.css">
+        <style>
+            /* --- STYLE DE LA POP-UP DE DÉVELOPPEMENT --- */
+
+            /* Fond sombre et flou */
+            #dev-notice-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(10, 5, 20, 0.7);
+                backdrop-filter: blur(10px);
+                z-index: 9999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                opacity: 1;
+                transition: opacity 0.4s ease, visibility 0.4s ease;
+            }
+
+            /* La boîte de dialogue */
+            .dev-notice-modal {
+                background: #0e0b15;
+                padding: 30px 40px;
+                border-radius: 16px;
+                max-width: 90%;
+                width: 500px;
+                /* Un peu plus large pour le texte */
+                text-align: center;
+                color: var(--text-main);
+
+                /* Effet de lueur blanche/violette */
+                box-shadow: 0 0 50px rgba(255, 255, 255, 0.08), 0 0 20px rgba(138, 43, 226, 0.15);
+
+                transform: scale(1);
+                transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            }
+
+            .dev-notice-modal h3 {
+                margin: 0 0 15px 0;
+                font-size: 1.6rem;
+                color: white;
+            }
+
+            .dev-notice-modal p {
+                margin: 0 0 20px 0;
+                color: #b0b0b0;
+                /* Texte un peu plus clair */
+                line-height: 1.6;
+            }
+
+            /* Style de la liste des fonctionnalités */
+            .features-list {
+                list-style: none;
+                /* Pas de puces par défaut */
+                padding: 0;
+                margin: 0 auto 25px auto;
+                text-align: left;
+                display: inline-block;
+                /* Pour centrer le bloc de liste */
+                color: #999;
+            }
+
+            .features-list li {
+                margin-bottom: 8px;
+                padding-left: 20px;
+                position: relative;
+            }
+
+            /* Puce personnalisée (style "croix") */
+            .features-list li::before {
+                content: '»';
+                /* Ou '»', '•' */
+                position: absolute;
+                left: 0;
+                color: #666;
+            }
+
+            /* Style du paragraphe Discord */
+            .discord-notice {
+                background-color: rgba(0, 0, 0, 0.2);
+                padding: 10px;
+                border-radius: 8px;
+                font-size: 0.9rem;
+            }
+
+            /* Style du lien Discord */
+            .discord-notice a {
+                color: #7d2ae8;
+                /* Violet */
+                font-weight: bold;
+                text-decoration: underline;
+                text-underline-offset: 3px;
+            }
+
+            /* Bouton pour fermer */
+            .dev-notice-modal button {
+                background: var(--accent);
+                color: white;
+                border: none;
+                padding: 12px 35px;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 1rem;
+                cursor: pointer;
+                margin-top: 15px;
+                transition: all 0.3s ease;
+                box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+            }
+
+            .dev-notice-modal button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
+            }
+
+            /* État caché de la pop-up */
+            #dev-notice-overlay.hidden {
+                opacity: 0;
+                visibility: hidden;
+            }
+
+            #dev-notice-overlay.hidden .dev-notice-modal {
+                transform: scale(0.9);
+            }
+        </style>
+</head>
+
+<body class="landing-body">
+
+    <div class="scroll-container" id="mainScroll">
+
+        <!-- SCREEN 1: WELCOME -->
+        <section class="landing-section welcome-screen">
+            <div class="blur-overlay"></div>
+            <div class="welcome-content">
+                <h1 class="fade-in">Welcome</h1>
+                <h2 class="fade-in delay">To <span class="highlight">ALStream</span></h2>
+            </div>
+
+            <div class="scroll-indicator" onclick="scrollToId('universe')">
+                <span>Enter</span>
+                <i class="fas fa-chevron-down bounce"></i>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: CHOOSE UNIVERSE -->
+        <section class="landing-section universe-screen" id="universe">
+            <div class="content-wrapper">
+                <h1 class="landing-title">Choose Your<span class="highlight"> Universe</span></h1>
+
+                <div class="choice-grid">
+                    <!-- Movies 
+                    <a href="/catalog?type=Movies" class="choice-card film-card">
+                        <div class="card-bg"></div>
+                        <div class="content">
+                            <i class="fas fa-film"></i>
+                            <h2>MOVIES</h2>
+                        </div>
+                    </a>-->
+
+                    <!-- TV Shows 
+                    <a href="/catalog?type=TV Shows" class="choice-card serie-card">
+                        <div class="card-bg"></div>
+                        <div class="content">
+                            <i class="fas fa-tv"></i>
+                            <h2>TV SHOWS</h2>
+                        </div>
+                    </a>-->
+
+                    <!-- Anime -->
+                    <a href="/catalog?type=Anime" class="choice-card anime-card">
+                        <div class="card-bg"></div>
+                        <div class="content">
+                            <i class="fas fa-dragon"></i>
+                            <h2>ANIME</h2>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+    </div>
+
+    <script>
+        // Fonction générique pour scroller vers un ID (INCHANGÉ)
+        function scrollToId(elementId) {
+            const container = document.getElementById('mainScroll');
+            const target = document.getElementById(elementId);
+
+            if (!target) return;
+
+            const duration = 1000;
+            const start = container.scrollTop;
+            const distance = target.offsetTop - start;
+            let startTime = null;
+
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const ease = (t) => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+                const run = ease(timeElapsed / duration) * distance + start;
+                container.scrollTop = run;
+                if (timeElapsed < duration) requestAnimationFrame(animation);
+            }
+            requestAnimationFrame(animation);
+        }
+
+        // Pop-up de développement (MODIFIÉ)
+        document.addEventListener('DOMContentLoaded', () => {
+            const devNoticeOverlay = document.getElementById('dev-notice-overlay');
+            const closeDevNoticeBtn = document.getElementById('close-dev-notice-btn');
+
+            // La vérification du localStorage a été supprimée ici.
+            // La pop-up s'affichera donc à chaque chargement de la page.
+
+            function closeDevNotice() {
+                // La sauvegarde dans le localStorage a été supprimée ici.
+                devNoticeOverlay.classList.add('hidden');
+            }
+
+            closeDevNoticeBtn.addEventListener('click', closeDevNotice);
+        });
+    </script>
+    <!-- =========================================
+     POP-UP D'INFORMATION (SITE EN DÉVELOPPEMENT)
+     ========================================= -->
+    <div id="dev-notice-overlay">
+        <div class="dev-notice-modal">
+            <h3>Bonjour et bienvenue !</h3>
+            <p>
+                Ce site est actuellement en cours de développement. Certaines fonctionnalités ne sont donc pas encore
+                actives :
+            </p>
+            <ul class="features-list">
+                <li>L'historique de visionnage</li>
+                <li>La gestion des favoris</li>
+                <li>Le tri des contenus</li>
+                <li>Le filtrage par tags</li>
+                <li>La section "Dernières Sorties"</li>
+                <li>La traduction du site et des animes</li>
+            </ul>
+            <p class="discord-notice">
+                Pour nous supporter ou signaler un bug, n'hésitez pas à rejoindre notre communauté sur
+                <a href="https://discord.gg/axWt97Cn6H" target="_blank" rel="noopener noreferrer">Discord</a>.
+            </p>
+            <button id="close-dev-notice-btn">Bien compris !</button>
+        </div>
+    </div>
+
+</body>
+
+</html>

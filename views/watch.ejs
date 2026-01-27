@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <%- include('partials/head', { title: anime.titre + ' - ALStream' }) %>
+        <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+
+        <div class="details-container">
+            <div class="details-left">
+                <div class="poster-wrapper">
+                    <img src="<%= anime.affiche %>" alt="<%= anime.titre %>">
+                </div>
+            </div>
+
+            <div class="details-right">
+                <h1 class="media-title">
+                    <%= anime.titre %>
+                </h1>
+                <div class="media-meta">
+                    <span><i class="fas fa-calendar-alt"></i>
+                        <%= anime.date_sortie %>
+                    </span> •
+                    <span><i class="fas fa-star" style="color: gold;"></i>
+                        <%= anime.note %>
+                    </span>
+                </div>
+                <p
+                    style="color: #ccc; margin-top: 10px; font-size: 0.9rem; line-height: 1.4; max-height: 80px; overflow: hidden;">
+                    <%= anime.synopsis %>
+                </p>
+
+                <div class="controls-area">
+                    <div class="season-selector" id="seasonTabs"></div>
+                    <% var hasVO=false; var hasVF=false; if (episodes && episodes.length> 0) {
+                        episodes.forEach(ep => {
+                        if (ep.langue?.toUpperCase() === 'VOSTFR') hasVO = true;
+                        if (ep.langue?.toUpperCase() === 'VF') hasVF = true;
+                        });
+                        }
+                        var defaultLang = hasVO ? 'vostfr' : (hasVF ? 'vf' : 'ALL');
+                        %>
+                        <div class="lang-buttons">
+                            <% if (hasVO) { %><button class="flag-btn vo-flag active"
+                                    onclick="setLanguage('vostfr', this)">VO</button>
+                                <% } %>
+                                    <% if (hasVF) { %><button class="flag-btn vf-flag"
+                                            onclick="setLanguage('vf', this)">VF</button>
+                                        <% } %>
+                                            <button class="flag-btn all-flag" onclick="setLanguage('ALL', this)"><i
+                                                    class="fas fa-globe"></i></button>
+                        </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #333; margin-bottom: 20px;">
+
+                <div class="episodes-grid" id="gridContainer">
+                    <% episodes.forEach((ep, i)=> {
+                        var playersData = JSON.stringify(ep.lecteurs || []);
+                        %>
+                        <div class="episode-card" data-players='<%- playersData %>'
+                            data-title="S<%= ep.saison %> - Ep <%= ep.episode %>" data-lang="<%= ep.langue %>"
+                            data-season="<%= ep.saison %>" onclick="openVideo(this)">
+                            <img src="<%= ep.image || anime.affiche %>" alt="Ep <%= ep.episode %>">
+                            <span class="lang-badge <%= ep.langue %>">
+                                <%= ep.langue %>
+                            </span>
+                            <div class="ep-info">
+                                <span class="ep-number">Épisode <%= ep.episode %></span>
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAYER OVERLAY -->
+        <div class="video-overlay" id="videoModal">
+            <div class="video-container-modal">
+                <div class="modal-header">
+                    <h3 class="modal-title-text" id="modalTitle">Lecture...</h3>
+                    <button class="btn-close-modern" onclick="closeVideo()"><i class="fas fa-times"></i></button>
+                </div>
+
+                <!-- Sélecteur de lecteurs -->
+                <div class="custom-select-wrapper" id="playerDropdown">
+                    <div class="custom-select-trigger" onclick="toggleDropdown(event)">
+                        <span id="currentPlayerText">Lecteur Principal</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="custom-options" id="playerOptions"></div>
+                </div>
+
+                <div class="video-wrapper">
+                    <iframe id="mainPlayer" src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+
+                <div class="modal-controls">
+                    <button class="nav-btn" id="btnPrev" onclick="playPrev()"><i class="fas fa-chevron-left"></i>
+                        Précédent</button>
+                    <button class="nav-btn" id="btnNext" onclick="playNext()">Suivant <i
+                            class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentLang = '<%= defaultLang %>';
+            let currentSeason = 1;
+            let currentPlayingCard = null;
+
+            // --- FILTRES ---
+            function setLanguage(lang, btn) {
+                currentLang = lang;
+                document.querySelectorAll('.flag-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyFilters();
+            }
+
+            function applyFilters() {
+                document.querySelectorAll('.episode-card').forEach(card => {
+                    const match = (currentLang === 'ALL' || card.dataset.lang === currentLang) && (parseInt(card.dataset.season) === currentSeason);
+                    card.style.display = match ? 'block' : 'none';
+                    match ? card.classList.add('visible-ep') : card.classList.remove('visible-ep');
+                });
+            }
+
+            // --- LECTEUR ---
+            function toggleDropdown(e) { e.stopPropagation(); document.getElementById('playerDropdown').classList.toggle('open'); }
+            window.onclick = () => document.getElementById('playerDropdown').classList.remove('open');
+
+            function openVideo(card) {
+                currentPlayingCard = card;
+                let players = JSON.parse(card.dataset.players);
+
+                // Filtrage Doublons & Tri
+                const unique = []; const seen = new Set();
+                players.forEach(p => { if (!seen.has(p.url)) { seen.add(p.url); unique.push(p); } });
+                unique.sort((a, b) => a.nom.localeCompare(b.nom, undefined, { numeric: true }));
+
+                document.getElementById('videoModal').style.display = 'flex';
+                document.getElementById('modalTitle').innerText = card.dataset.title;
+
+                const options = document.getElementById('playerOptions');
+                options.innerHTML = '';
+
+                if (unique.length > 0) {
+                    document.getElementById('currentPlayerText').innerText = unique[0].nom;
+                    document.getElementById('mainPlayer').src = unique[0].url;
+                    unique.forEach((p, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'custom-option' + (i === 0 ? ' selected' : '');
+                        div.innerText = p.nom;
+                        div.onclick = () => {
+                            document.getElementById('mainPlayer').src = p.url;
+                            document.getElementById('currentPlayerText').innerText = p.nom;
+                            document.getElementById('playerDropdown').classList.remove('open');
+                        };
+                        options.appendChild(div);
+                    });
+                }
+                updateNavButtons();
+            }
+
+            function closeVideo() { document.getElementById('videoModal').style.display = 'none'; document.getElementById('mainPlayer').src = ""; }
+
+            function updateNavButtons() {
+                const visible = Array.from(document.querySelectorAll('.episode-card.visible-ep'));
+                const idx = visible.indexOf(currentPlayingCard);
+                document.getElementById('btnPrev').disabled = (idx <= 0);
+                document.getElementById('btnNext').disabled = (idx >= visible.length - 1);
+            }
+
+            function playNext() {
+                const visible = Array.from(document.querySelectorAll('.episode-card.visible-ep'));
+                const idx = visible.indexOf(currentPlayingCard);
+                if (idx < visible.length - 1) openVideo(visible[idx + 1]);
+            }
+            function playPrev() {
+                const visible = Array.from(document.querySelectorAll('.episode-card.visible-ep'));
+                const idx = visible.indexOf(currentPlayingCard);
+                if (idx > 0) openVideo(visible[idx - 1]);
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                // Initialisation Saisons
+                const seasons = new Set();
+                document.querySelectorAll('.episode-card').forEach(c => seasons.add(parseInt(c.dataset.season)));
+                const sorted = Array.from(seasons).sort((a, b) => a - b);
+                const container = document.getElementById('seasonTabs');
+                sorted.forEach(s => {
+                    const b = document.createElement('button');
+                    b.className = 'season-tab-btn' + (s === 1 ? ' active' : '');
+                    b.innerText = 'Saison ' + s;
+                    b.onclick = () => {
+                        document.querySelectorAll('.season-tab-btn').forEach(x => x.classList.remove('active'));
+                        b.classList.add('active'); currentSeason = s; applyFilters();
+                    };
+                    container.appendChild(b);
+                });
+                applyFilters();
+            });
+        </script>
+</body>
+
+</html>

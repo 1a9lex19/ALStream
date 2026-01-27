@@ -1,0 +1,44 @@
+{
+  "name": "alstream",
+  "version": "1.0.0",
+  "description": "",
+  "main": "init_db.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "homepage": "https://1a9lex19.github.io/ALStream",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@iamtraction/google-translate": "^1.1.2",
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
+    "cheerio": "^1.1.2",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.2.1",
+    "express-session": "^1.18.2",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "moment": "^2.30.1",
+    "node-cron": "^4.2.1",
+    "pg": "^8.17.1",
+    "puppeteer": "^24.35.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "readline-sync": "^1.4.10",
+    "socket.io": "^4.8.3",
+    "sqlite3": "^5.0.2",
+    "vite": "^7.3.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}

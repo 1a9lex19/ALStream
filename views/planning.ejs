@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <%- include('partials/head', { title: 'Planning - ALStream' }) %>
+        <link rel="stylesheet" href="/public/style.css">
+
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+
+        <div class="planning-wrapper">
+            <h2 style="margin-bottom: 30px; text-transform: uppercase; text-align: center; letter-spacing: 1px;">
+                Planning des Sorties
+            </h2>
+            <hr
+                class="planning-separator <%= (typeof today !== 'undefined' && daysOrder.includes(today)) ? 'active-day-hr' : '' %>">
+
+            <div class="week-grid">
+                <% daysOrder.forEach(function(day) { %>
+                    <% const dayData=planning[day]; %>
+
+                        <div class="day-column <%= (typeof today !== 'undefined' && day === today) ? 'active' : '' %>">
+                            <div class="day-header">
+                                <span class="dh-name">
+                                    <%= day %>
+                                </span>
+                                <span class="dh-date">
+                                    <%= dayData.date %>
+                                </span>
+                            </div>
+
+                            <div class="day-body">
+                                <% if (dayData.animes && dayData.animes.length> 0) { %>
+                                    <% dayData.animes.forEach(function(anime) { %>
+                                        <a href="/watch/<%= anime.slug %>" class="p-card" title="<%= anime.titre %>">
+
+                                            <div class="pc-img-box">
+                                                <!-- Badge "Anime" en haut à gauche -->
+                                                <div class="pc-badges">
+                                                    <span class="badge">Anime</span>
+                                                </div>
+
+                                                <!-- NOUVEAU : DRAPEAU DE LANGUE EN HAUT À DROITE -->
+                                                <% if (anime.langue==='VF' ) { %>
+                                                    <div class="lang-flag flag-vf" title="Version Française"></div>
+                                                    <% } else if (anime.langue==='VOSTFR' ) { %>
+                                                        <div class="lang-flag flag-vostfr"
+                                                            title="Version Originale Sous-Titrée Français"></div>
+                                                        <% } %>
+
+                                                            <!-- Image de fond -->
+                                                            <img src="<%= anime.affiche %>" loading="lazy"
+                                                                alt="<%= anime.titre %>">
+                                            </div>
+
+                                            <!-- Titre (accordéon) -->
+                                            <div class="pc-info">
+                                                <div class="pc-title">
+                                                    <%= anime.titre %>
+                                                </div>
+                                                <div
+                                                    style="width: 40px; height: 2px; background: #444; margin: 8px auto;">
+                                                </div>
+                                            </div>
+
+                                            <!-- Heure -->
+                                            <div class="pc-footer">
+                                                <div class="time-box">
+                                                    <i class="far fa-clock"></i>
+                                                    <%= anime.heure %>
+                                                </div>
+                                            </div>
+
+                                        </a>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <div
+                                                    style="text-align: center; padding: 20px; color: #666; font-style: italic; opacity: 0.6;">
+                                                    -
+                                                </div>
+                                                <% } %>
+                            </div>
+                        </div>
+                        <% }); %>
+            </div>
+        </div>
+</body>
+
+</html>

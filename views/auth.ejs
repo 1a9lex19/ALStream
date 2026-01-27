@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <%- include('partials/head', { title: 'Connection - ALStream' }) %>
+        <link rel="stylesheet" href="/public/style.css">
+
+<body>
+
+    <div class="auth-wrapper">
+        <!-- Logo flottant -->
+        <a href="/" class="auth-logo">AL<span>Stream</span></a>
+
+        <div class="container" id="container">
+
+            <!-- FORMULAIRE INSCRIPTION (Sign Up) -->
+            <div class="form-container sign-up-container">
+                <form action="/register" method="POST">
+                    <h1>Créer un compte</h1>
+                    <input type="text" name="username" placeholder="Nom d'utilisateur" required />
+                    <input type="email" name="email" placeholder="Email" required />
+                    <input type="password" name="password" placeholder="Mot de passe" required />
+                    <button type="submit">S'inscrire</button>
+
+                    <% if(typeof error !=='undefined' && error) { %>
+                        <p class="error-msg">
+                            <%= error %>
+                        </p>
+                        <% } %>
+                </form>
+            </div>
+
+            <!-- FORMULAIRE CONNEXION (Sign In) -->
+            <div class="form-container sign-in-container">
+                <form action="/login" method="POST">
+                    <h1>Connexion</h1>
+                    <input type="email" name="email" placeholder="Email" required />
+                    <input type="password" name="password" placeholder="Mot de passe" required />
+                    <a href="#" class="forgot-pass">Mot de passe oublié ?</a>
+                    <button type="submit">Se connecter</button>
+
+                    <% if(typeof error !=='undefined' && error) { %>
+                        <p class="error-msg">
+                            <%= error %>
+                        </p>
+                        <% } %>
+                </form>
+            </div>
+
+            <!-- PANNEAU GLISSANT (Overlay) -->
+            <div class="overlay-container">
+                <div class="overlay">
+                    <!-- Panneau gauche (Visible quand on est sur Inscription) -->
+                    <div class="overlay-panel overlay-left">
+                        <h1>Re-bonjour !</h1>
+                        <p>Pour rester connecté avec nous, veuillez vous connecter avec vos informations personnelles
+                        </p>
+                        <button class="ghost" id="signIn">Se connecter</button>
+                    </div>
+                    <!-- Panneau droit (Visible quand on est sur Connexion) -->
+                    <div class="overlay-panel overlay-right">
+                        <h1>Bienvenue !</h1>
+                        <p>Entrez vos détails personnels et commencez votre voyage avec nous</p>
+                        <button class="ghost" id="signUp">S'inscrire</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const signUpButton = document.getElementById('signUp');
+        const signInButton = document.getElementById('signIn');
+        const container = document.getElementById('container');
+
+        // Basculer l'animation
+        signUpButton.addEventListener('click', () => {
+            container.classList.add("right-panel-active");
+        });
+
+        signInButton.addEventListener('click', () => {
+            container.classList.remove("right-panel-active");
+        });
+
+        // (Optionnel) Si il y a une erreur lors de l'inscription, on reste sur le panneau inscription
+        /* <% if(typeof error !== 'undefined' && error && error.includes('pris')) { %>
+             container.classList.add("right-panel-active");
+        <% } %> */
+    </script>
+</body>
+
+</html>

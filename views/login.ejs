@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('partials/head', { title: 'Login-Admin - ALStream' }) %>
+        <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+    <!-- Le conteneur gère le fond dégradé et le centrage via le CSS -->
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo_login">
+                <a href="/">AL<span class="highlight">Stream</span></a>
+            </div>
+
+            <h1>Admin Panel</h1>
+            <p>Connectez-vous pour accéder à l'administration</p>
+
+            <% if (typeof error !=='undefined' && error) { %>
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <% if (typeof success !=='undefined' && success) { %>
+                        <div class="success-message">
+                            <i class="fas fa-check-circle"></i>
+                            <%= success %>
+                        </div>
+                        <% } %>
+
+                            <form action="/admin/login" method="POST">
+                                <div class="form-group">
+                                    <label for="password"><i class="fas fa-key"></i> Mot de passe</label>
+                                    <input type="password" id="password" name="password"
+                                        placeholder="Entrez le mot de passe" required>
+                                </div>
+
+                                <button type="submit" class="login-btn">
+                                    Se connecter <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                                </button>
+                            </form>
+
+                            <div class="login-footer">
+                                <p>© 2026 ALStream - Admin Only</p>
+                                <a href="/" style="color: #666; font-size: 0.8rem; text-decoration: underline;">Retour
+                                    au site</a>
+                            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,19 @@
+<nav class="navbar">
+    <div style="display:flex; align-items:center; gap:30px;">
+        <div class="logo"><a href="/">Al<span class="highlight">Stream</span></a></div>
+        <a href="/catalog" class="home-button">Home</a>
+    </div>
+    <div class="nav-actions">
+        <a href="/planning" class="user-icon calendar-btn" title="Planning des sorties">
+            <i class="fas fa-calendar-alt"></i>
+        </a>
+
+        <% if (user) { %>
+            <a href="/profile" class="user-icon" title="Mon Profil">
+                <%= user.username.charAt(0).toUpperCase() %>
+            </a>
+            <% } else { %>
+                <a href="/login" class="user-icon">👤</a>
+                <% } %>
+    </div>
+</nav>
